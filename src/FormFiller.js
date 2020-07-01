@@ -21,10 +21,12 @@ class FormFiller
         ];
 
         this.form = document.activeElement.closest('form');
-        this.fields = this.form.querySelectorAll('input:not([type=hidden]):not([readonly]), textarea, select');
+        this.fields = this.form.querySelectorAll(this.validElementTypes.join(', '));
 
-        this.processRadioInputs();
-        this.processCheckboxes();
+        this.processTextFields();
+        this.processRadioFields();
+        this.processCheckboxFields();
+        this.processSelectFields();
         this.fields.forEach(field => this.handleField(field));
     }
 
@@ -37,13 +39,35 @@ class FormFiller
         if (!this.validElementTypes.includes(tagName)) return false;
     }
 
-    static processRadioInputs()
+    static processTextFields()
+    {
+        // Get all text fields
+        let textFields = this.getFieldsByType('text');
+
+        textFields.forEach(field => field.value = `Testing Field - ${field.name}`);
+    }
+
+    static processSelectFields()
+    {
+        // Get all select fields
+        let selectFields = [...this.fields].filter(field => field.tagName == 'SELECT');
+
+        selectFields.forEach(field => {
+            const options = field.children;
+
+            const random = Math.floor(Math.random() * options.length);
+            
+            field.value = options[random].value;
+        });
+    }
+
+    static processRadioFields()
     {
         // Get all radio inputs
-        let radioInputs = this.getFieldsByType('radio');
+        let radioFields = this.getFieldsByType('radio');
 
         // Group the radio inputs by their name
-        let radioGroups = this.groupByProperty(radioInputs, 'name');
+        let radioGroups = this.groupByProperty(radioFields, 'name');
 
         // Loop through each radio group and select a random option
         for (const group in radioGroups) {
@@ -51,14 +75,14 @@ class FormFiller
             randomOption.checked = true;
         }
     }
-    
-    static processCheckboxes()
+
+    static processCheckboxFields()
     {
         // Get all checkbox inputs
-        let checkboxInputs = this.getFieldsByType('checkbox');
+        let checkboxFields = this.getFieldsByType('checkbox');
 
         // Group the checkbox inputs by their name
-        let checkboxGroups = this.groupByProperty(checkboxInputs, 'name');
+        let checkboxGroups = this.groupByProperty(checkboxFields, 'name');
 
         // Loop through each checkbox group and select a random option
         for (const group in checkboxGroups) {
